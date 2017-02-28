@@ -1,0 +1,36 @@
+{% extends "site_base.html" %}
+
+{% load i18n %}
+
+{% block head_title %}pinax-project-account{% endblock %}
+
+{% block body_class %}home{% endblock %}
+
+{% block body_base %}
+    <section class="jumbotron">
+        <div class="container">
+            {% include "_messages.html" %}
+            <h1>{% blocktrans %}Physics Night 聖地阿特斯加{% endblocktrans %}</h1>
+            <p>
+                {% blocktrans %}
+                掃qr換取好禮！
+                {% endblocktrans %}
+            </p>
+            {% if not user.is_authenticated %}
+            {% url "account_login" as login_url %}
+            {% url "account_signup" as signup_url %}
+
+            <p>{% blocktrans %} <a href="{{ login_url }}" class="btn btn-default">登入</a> or <a href="{{ signup_url }}" class="btn btn-primary">註冊</a> {% endblocktrans %}</p>
+            {% endif %}
+
+            {% if user.is_authenticated %}
+                <p>目前剩餘點數：{{  user.userprofile.usable_points }}  已得故事編號： {{ user.userprofile.opened_story }} 已購商品編號：{{ user.userprofile.bought_items }}</p>
+                 <p><a href="/storyboard" class="btn btn-default">故事欄</a>
+                     <a href="{% url "storypoints" user.id %}" class="btn btn-primary">QRcode</a>
+                     <a href="/shop" class="btn btn-default">兌換欄</a>
+                 <a href="" class="btn btn-primary">點數排名</a>
+                </p>
+            {% endif %}
+        </div>
+    </section>
+{% endblock %}
