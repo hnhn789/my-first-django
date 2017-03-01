@@ -5,7 +5,7 @@
 <h1>故事欄</h1>
 <ul>
 {% for story in object_list %}
-    <li><h3>{{ story.topic }}</h3>
+    <li><h3>{{ story.title }}</h3>
         <p>{{ story.content }}</p></li>
 {% empty %}
     <li>目前無劇情</li>

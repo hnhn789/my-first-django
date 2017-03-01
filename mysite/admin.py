@@ -11,7 +11,7 @@ class UserPointsAdmin(admin.ModelAdmin):
 
 
 class StoryAdmin(admin.ModelAdmin):
-    list_display = ["pk","topic", "content"]
+    list_display = ["pk","title", "content"]
 
 class ShoppingAdmin(admin.ModelAdmin):
     list_display = ["buyer","item", "number"]

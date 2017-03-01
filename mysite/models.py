@@ -13,7 +13,7 @@ class UserProfile(models.Model):
 
 class Story(models.Model):
     points = models.IntegerField(default=0)
-    topic = models.CharField(max_length=100,blank=True)
+    title = models.CharField(max_length=100,blank=True)
     content = models.TextField(blank=True)
 
 class ItemList(models.Model):
