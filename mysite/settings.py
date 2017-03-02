@@ -10,7 +10,7 @@ DEBUG = True
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": "/home/hnhn789/my-first-django/dev.db",
+         "NAME": "/home/hnhn789/my-first-django/dev.db",
         # "NAME":"dev.db"
     }
 }
