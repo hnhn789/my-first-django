@@ -10,3 +10,8 @@ class StoryPointSerializer(serializers.ModelSerializer):
 
 class SuccessSerializer(serializers.Serializer):
     success = serializers.BooleanField()
+
+class ItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ItemList
+        fields = ('name','price', 'remain')

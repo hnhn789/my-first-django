@@ -11,8 +11,7 @@ from django.http import Http404
 import account.views
 from .forms import SignupForm
 from .models import UserProfile, Story, ItemList
-from .serializers import StoryPointSerializer, SuccessSerializer
-
+from .serializers import StoryPointSerializer, SuccessSerializer, ItemSerializer
 class SignupView(account.views.SignupView):
 
     form_class = SignupForm
@@ -74,7 +73,6 @@ class BuyItem(APIView):
 class GetStoryPoints(APIView):
 
 
-
     def get_object(self, pk):
         try:
             return Story.objects.get(pk=pk)
@@ -87,6 +85,12 @@ class GetStoryPoints(APIView):
         serializer = StoryPointSerializer(story)
         return Response(serializer.data)
 
+    def post(self, request, uid, format=None):
+        serializer = ItemSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def generate_random_stroypoints(self):
         random_story_index = randint(1, 3)
