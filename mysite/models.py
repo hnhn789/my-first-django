@@ -26,3 +26,5 @@ class ShoppingRecord(models.Model):
     item = models.ForeignKey(ItemList, on_delete=models.CASCADE)
     number = models.IntegerField(default=0);
 
+
+

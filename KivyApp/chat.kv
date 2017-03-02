@@ -1,0 +1,92 @@
+#:import RiseInTransition kivy.uix.screenmanager.RiseInTransition
+#:import TextInput kivy.uix.textinput.TextInput
+#:import GridLayout kivy.uix.gridlayout
+#:import C kivy.utils.get_color_from_hex
+
+<TextInput>:
+    on_parent:self.focus = True
+    multiline: False
+    font_size: 60
+    padding: [10, 0.5 * (self.height - self.line_height)]
+    #on_enter: app.test()
+
+<Label>:
+    font_name: 'Roboto'
+    font_size: 60
+    markup: True
+
+<ChatLabel@Label>:
+    text_size: (self.width, None) # Step 1
+    halign: 'left'
+    valign: 'top'
+    size_hint: (1, None) # Step 2
+    height: self.texture_size[1] # Step 3
+    color: C('#101010')
+
+<ScrollView>:
+    canvas.before:
+        Color:
+            rgb: 1, 1, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<Screen_Manager>:
+    transition: RiseInTransition()
+    canvas.before:
+        BorderImage:
+            # BorderImage behaves like the CSS BorderImage
+            texture: self.background_image.texture
+            pos: self.pos
+            size: self.size        
+   
+    Screen:
+        name: 'login'
+        BoxLayout:
+            orientation: 'vertical'
+            GridLayout:
+                cols: 2
+                rows: 2
+                spacing: 60
+                padding: 60 
+
+                Label: 
+                    text: 'Server:'
+                TextInput:
+                    id: server
+                    text: '127.0.0.1'
+                Label:
+                    text: 'Nickname:'
+                TextInput:
+                    id: nickname
+                    text: 'Kivy'
+
+            Button:
+                text: 'Connect'
+                on_press: app.get()
+
+    Screen:
+        name: 'chatroom'
+        BoxLayout:
+            orientation: 'vertical'
+            padding: 10
+            spacing: 10
+            Button:
+                text: 'Disconnect'
+                background_color: C('#FF0000')
+                on_press: root.current = 'login'
+            ScrollView:
+                ChatLabel:
+                    id: chat_logs
+                    text: 'User says: foo\nUser says: bar'
+            BoxLayout:
+                height: 90
+                orientation: 'horizontal'
+                padding: 0
+                size_hint: (1, None)
+                TextInput: 
+                    id: message
+                Button:
+                    text: 'Send'
+                    size_hint: (0.3, 1)
+                    background_color: C('#2980b9')

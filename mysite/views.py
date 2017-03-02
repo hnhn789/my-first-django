@@ -11,7 +11,7 @@ from django.http import Http404
 import account.views
 from .forms import SignupForm
 from .models import UserProfile, Story, ItemList
-from .serializers import StoryPointSerializer
+from .serializers import StoryPointSerializer, SuccessSerializer
 
 class SignupView(account.views.SignupView):
 
@@ -51,9 +51,12 @@ class BuyItem(APIView):
             raise Http404
 
     def get(self, request, uid, item_id, format=None):
-        self.save_to_user(uid, item_id)
-        self.update_item(item_id)
-        return redirect("home",permanent=True)
+        # self.save_to_user(uid, item_id)
+        # self.update_item(item_id)
+        # return redirect("",permanent=True)
+        success = TrueFalse(True)
+        serializer = SuccessSerializer(success)
+        return Response(serializer.data  ,status=status.HTTP_200_OK)
 
     def update_item(self, item_id):
         item = ItemList.objects.get(pk=item_id)
@@ -71,6 +74,7 @@ class BuyItem(APIView):
 class GetStoryPoints(APIView):
 
 
+
     def get_object(self, pk):
         try:
             return Story.objects.get(pk=pk)
@@ -81,7 +85,8 @@ class GetStoryPoints(APIView):
         story, random_story_index = self.generate_random_stroypoints()
         self.save_to_user(story.points, uid, random_story_index)
         serializer = StoryPointSerializer(story)
-        return render(request, 'storypoints.html', serializer.data)
+        return Response(serializer.data)
+
 
     def generate_random_stroypoints(self):
         random_story_index = randint(1, 3)
@@ -95,6 +100,11 @@ class GetStoryPoints(APIView):
         user.history_points += points
         user.opened_story += str(random_story_index) + ", "
         user.save()
+
+
+class TrueFalse():
+    def __init__(self, success):
+        self.success = success
 
 
 
