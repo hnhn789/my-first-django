@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 import account.admin
-from .models import UserProfile, Story, ShoppingRecord, ItemList
+from .models import UserProfile, Story, ItemList
 
 
 
@@ -14,7 +14,7 @@ class StoryAdmin(admin.ModelAdmin):
     list_display = ["pk","title", "content"]
 
 class ShoppingAdmin(admin.ModelAdmin):
-    list_display = ["buyer","item", "number"]
+    list_display = ["buyer","item"]
 
 
 class ItemAdmin(admin.ModelAdmin):

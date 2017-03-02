@@ -8,6 +8,10 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.http import Http404
 
+import time
+import datetime
+from random import randint
+
 import account.views
 from .forms import SignupForm
 from .models import UserProfile, Story, ItemList
@@ -50,11 +54,23 @@ class BuyItem(APIView):
         except Story.DoesNotExist:
             raise Http404
 
-    def get(self, request, uid, item_id, format=None):
-        self.save_to_user(uid, item_id)
-        self.update_item(item_id)
-        return redirect("home",permanent=True)
 
+    def buy(self, request, uid, item_id):
+        self.save_to_user(uid, item_id)
+#        ShoppingRecord.objects.create(self, buyer=uid, item=item_id)
+ #       self.get_buy_info(request, uid, item_id)
+        return Response(status=status.HTTP_200_OK) ##TODO propriate response
+
+    '''
+        def buy(request, uid, item_id):
+            buyer = UserProfile.objects.get(pk=uid)
+            self.update_item(item_id)
+            shopping = ShoppingRecord.objects.create(buyer=buyer, item=ItemList.objects.)
+
+
+        def get_buy_info(self, request, uid, item_id, quantity):
+            ShoppingRecord.objects.create(self, buyer=uid, item=item_id)
+    '''
     def update_item(self, item_id):
         item = ItemList.objects.get(pk=item_id)
         item.remain -= 1
@@ -62,14 +78,29 @@ class BuyItem(APIView):
 
     def save_to_user(self, uid, item_id):
         item = ItemList.objects.get(pk=item_id)
+        buyer = UserProfile.objects.get(user_id=uid)
+        if item.remain >= 1:
+            buyer.bought_items.item_name = item_id
+            buyer.bought_items.item_quantity += 1
+            self.update_item(item_id)
+            buyer.usable_points -= item.price
+            buyer.save()
+        else:
+            return Response(status=status.HTTP_409_CONFLICT) #TODO propriate response
+
+
+class QRCode(APIView):
+
+    def got_code(self, request, uid, code):
         user = UserProfile.objects.get(user_id=uid)
-        user.bought_items += str(item_id) + ","
-        user.usable_points -= item.price
+        point_recieved = randint(10,50)     #point range set here
+        user.usable_points += point_recieved
         user.save()
+        return Response(status=status.HTTP_200_OK)   #TODO propriate response
 
 
+'''
 class GetStoryPoints(APIView):
-
 
     def get_object(self, pk):
         try:
@@ -95,6 +126,8 @@ class GetStoryPoints(APIView):
         user.history_points += points
         user.opened_story += str(random_story_index) + ", "
         user.save()
+
+'''
 
 
 
