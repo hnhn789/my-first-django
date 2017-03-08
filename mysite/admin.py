@@ -1,12 +1,12 @@
 from django.contrib import admin
 
 import account.admin
-from .models import UserProfile, ItemList, QRcodeList ,BoughtItems, QRCodeRecord, QRcodeStatus
+from .models import UserProfile, ItemList, QRcodeList ,BoughtItems, QRCodeRecord, QRcodeStatus, BoughtRecord
 
 
 
 class UserPointsAdmin(admin.ModelAdmin):
-    list_display = ["user", "real_name", "usable_points"]
+    list_display = ["pk", "user", "real_name", "usable_points"]
 
 '''
 class StoryAdmin(admin.ModelAdmin):
@@ -23,13 +23,18 @@ class QRCodeAdmin(admin.ModelAdmin):
     list_display = ["pk", "code_content"]
 
 class BoughtItemsAdmin(admin.ModelAdmin):
-    list_display = ["pk", "item_name", "item_quantity", "bought_time", "user"]
+    list_display = ["pk", "item_name", "item_quantity", "user"]
+
+class CodeStatusAdmin(admin.ModelAdmin):
+    list_display = ["user", "item_name", "bought_time"]
 
 class QRCodeRecordAdmin(admin.ModelAdmin):
     list_display = ["code_content", "time", "user"]
 
 class CodeStatusAdmin(admin.ModelAdmin):
     list_display = ["code", "last_read", "user"]
+
+
 
 admin.site.register(UserProfile, UserPointsAdmin)
 # admin.site.register(Story, StoryAdmin)

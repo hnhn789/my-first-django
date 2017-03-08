@@ -9,7 +9,7 @@ from.views import SignupView, ShopListView, BuyItem, QRCode
 
 
 urlpatterns = [
-    url(r"^$", TemplateView.as_view(template_name="homepage.html"), name="home"),
+#    url(r"^$", TemplateView.as_view(template_name="homepage.html"), name="home"),
     url(r"^admin/", include(admin.site.urls)),
     url(r"^account/signup/$", SignupView.as_view(), name="account_signup"),
     url(r"^account/", include("account.urls")),
@@ -17,7 +17,7 @@ urlpatterns = [
 #    url(r"^storyboard/", StoryListView.as_view(), name="storyboard"),
 #    url(r"^shop/$", ShopListView.as_view(), name="shop"),
     url(r"^shop/(?P<uid>\d+)/(?P<item_id>\d+)/$", BuyItem.as_view()),
-    url(r"^QRcode/(?P<uid>\d+)/(?P<slug>[-\w]+)/$", QRCode.as_view()),  #TODO request not done
+    url(r"^QRcode/(?P<uid>\d+)/(?P<qrcode>[-\w]+)/$", QRCode.as_view()),  #TODO request not done
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

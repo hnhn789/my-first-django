@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.http import Http404
+from django.http import HttpResponse
 import pytz
 from datetime import datetime
 
@@ -16,7 +17,7 @@ from random import randint
 
 import account.views
 from .forms import SignupForm
-from .models import UserProfile, ItemList, BoughtItems, QRCodeRecord, QRcodeStatus, QRcodeList
+from .models import UserProfile, ItemList, BoughtItems, QRCodeRecord, QRcodeStatus, QRcodeList, BoughtRecord
 #from .serializers import StoryPointSerializer
 
 class SignupView(account.views.SignupView):
@@ -52,86 +53,119 @@ class ShopListView(ListView):
 
 
 class BuyItem(APIView):
-    '''
-    def get_object(self, pk):
-        try:
-            return Story.objects.get(pk=pk)
-        except Story.DoesNotExist:
-            raise Http404
-        '''
+
+    #
+    # def get(self, request, uid, item_id):
+    #     #uid = 'uid'
+    #     #item_id = 'item_id'
+    #     self.save_to_user(uid, item_id)
+    #     #return HttpResponse('result')
+    #
+    # def update_item(self, item_id):
+    #     item = ItemList.objects.get(pk=item_id)
+    #     item.remain -= 1
+    #     item.save()
+    #
+    # def save_to_user(self, uid, item_id):
+    #     item = ItemList.objects.get(pk=item_id)
+    #     if item.remain >= 1:
+    #         self.update_item(item_id)
+    #         buyer = UserProfile.objects.get(pk=uid)
+    #         boughtitem = BoughtItems.objects.filter(item_name=item_id)
+    #
+    #         if boughtitem.filter(user=buyer).exists():
+    #             bought_item_record = boughtitem.get(user=buyer)
+    #             #return HttpResponse('222')
+    #         else:
+    #             bought_item_record = BoughtItems(item_name=item_id, user=buyer)
+    #             #return HttpResponse('111')
+    #
+    #         bought_item_record.item_quantity += 1
+    #         bought_item_record.save()
+    #         a = BoughtRecord(user=buyer, item_name=item_id)
+    #         a.save()
+    #         buyer.usable_points -= item.price
+    #         buyer.save()
+    #         return HttpResponse('success') #return Response(status=status.HTTP_200_OK)  ##TODO proper response
+    #     else:
+    #         return HttpResponse('not enough item') #return Response(status=status.HTTP_409_CONFLICT) #TODO proper response
+    def get(self, request, uid, item_id):
+        if (ItemList.objects.filter(pk=item_id).exists()):
+            if (UserProfile.objects.filter(pk=uid).exists()):
+                item = ItemList.objects.get(pk=item_id)
+                if item.remain >= 1:
+                    self.update_item(item_id)
+                    self.save_to_user(uid, item_id)
+                    return HttpResponse('success')  # return Response(status=status.HTTP_200_OK)  ##TODO proper response
+                else:
+                    return HttpResponse('not enough item')  # return Response(status=status.HTTP_409_CONFLICT) #TODO proper response
+            else:
+                return HttpResponse('user not exist')
+        else:
+            return HttpResponse('item not exist')
 
 
-    def buy(self, request, uid, item_id):
-        self.update_item(item_id)
-        self.save_to_user(uid, item_id)
-        return Response(status=status.HTTP_200_OK) ##TODO proper response
-
-    '''
-        def buy(request, uid, item_id):
-            buyer = UserProfile.objects.get(pk=uid)
-            self.update_item(item_id)
-            shopping = ShoppingRecord.objects.create(buyer=buyer, item=ItemList.objects.)
-
-
-        def get_buy_info(self, request, uid, item_id, quantity):
-            ShoppingRecord.objects.create(self, buyer=uid, item=item_id)
-    '''
     def update_item(self, item_id):
         item = ItemList.objects.get(pk=item_id)
         item.remain -= 1
         item.save()
 
+
     def save_to_user(self, uid, item_id):
-        item = ItemList.objects.get(pk=item_id)
-        if item.remain >= 1:
-            buyer = UserProfile.objects.get(user_id=uid)
-            boughtitem = BoughtItems.objects.filter(item_name=item_id)
-            if boughtitem.filter(user=buyer).exists():
-                bought_item_record = boughtitem.get(user=buyer)
-            else:
-                bought_item_record = BoughtItems(item_name=item_id, user=buyer)
+        buyer = UserProfile.objects.get(pk=uid)
+        boughtitem = BoughtItems.objects.filter(item_name=item_id)
 
-            bought_item_record.item_quantity += 1
-            bought_item_record.save()
-            buyer.usable_points -= item.price
-            buyer.save()
+        if boughtitem.filter(user=buyer).exists():
+            bought_item_record = boughtitem.get(user=buyer)
         else:
-            return Response(status=status.HTTP_409_CONFLICT) #TODO proper response
+            bought_item_record = BoughtItems(item_name=item_id, user=buyer)
 
+        bought_item_record.item_quantity += 1
+        bought_item_record.save()
+        a = BoughtRecord(user=buyer, item_name=item_id)
+        a.save()
+        item = ItemList.objects.get(pk=item_id)
+        buyer.usable_points -= item.price
+        buyer.save()
 
 class QRCode(APIView):
 
-    def got_code(self, request, uid, slug):
-        if (QRcodeList.objects.filter(slug=slug).exist):
-            self.got_correct_code(uid, slug)
-            return Response(status=status.HTTP_200_OK) #TODO proper response
+    def get(self, request, uid, qrcode):
+        if (QRcodeList.objects.filter(code_content=qrcode).exists()):
+            QRcode_status_data = self.got_correct_code(uid, qrcode)
+            old_time = QRcode_status_data.last_read
+            now = datetime.datetime.now(pytz.utc)
+            time_delta = now - old_time
+            if (time_delta.seconds >= 60):  # TODO QRcode cold down set here
+                QRcode_status_data.last_read = datetime.datetime.now()
+                QRcode_status_data.save()
+                point_recieved = randint(10, 50)  # point range set here
+                user = UserProfile.objects.get(pk=uid)
+                user.usable_points += point_recieved
+                user.save()
+                a = QRCodeRecord(code_content=qrcode, user=user)
+                a.save()
+                return HttpResponse('successfully got points')  # TODO proper response
+            else:
+                return HttpResponse('not cold down yet')
         else:
-            return Response(status=status.HTTP_404_NOT_FOUND)  #TODO proper response
+            return HttpResponse('code nonexist')  #TODO proper response
 
-    def got_correct_code(self, uid, slug):
-        user = UserProfile.objects.get(user_id=uid)
+    def got_correct_code(self, uid, qrcode):
+        user = UserProfile.objects.get(pk=uid)
         QRcode_check_slug_list = QRcodeStatus.objects.filter(user=user)
-        if QRcode_check_slug_list.filter(slug=slug).exists():
-            QRcode_status_data = QRcode_check_slug_list.get(slug=slug)
+        if QRcode_check_slug_list.filter(code=qrcode).exists():
+            QRcode_status_data = QRcode_check_slug_list.get(code=qrcode)
         else:
-            QRcode_status_data = QRcodeStatus(code=slug, user=user)
+            QRcode_status_data = QRcodeStatus(code=qrcode, user=user)
+        return QRcode_status_data
 
-        old_time = QRcode_status_data.last_read
 
-        self.aware_time_into_naive(old_time)
-
-        now = datetime.datetime.now()
-        time_delta = old_time - now
-        if (time_delta.seconds >= 60):             #TODO QRcode cold down set here
-            QRcode_status_data.save()
-            point_recieved = randint(10,50)     #point range set here
-            user.usable_points += point_recieved
-            user.save()
-        return Response(status=status.HTTP_200_OK)   #TODO proper response
-
-    def aware_time_into_naive(self, time):
-        est = pytz.timezone('Asia/Singapore')
-        time.astimezone(est).replace(tzinfo=None)
+'''
+    # def aware_time_into_naive(self, time):
+    #     est = pytz.timezone('Asia/Singapore')
+    #     time.astimezone(est).replace(tzinfo=None)
+'''
 
 
 '''

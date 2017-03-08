@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
+from datetime import datetime
 
 class UserProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL)
@@ -38,17 +39,16 @@ class ShoppingRecord(models.Model):
 class BoughtItems(models.Model):
     item_name = models.IntegerField(default=0)
     item_quantity = models.IntegerField(default=0)
-    bought_time = models.DateTimeField(auto_now_add=True, editable=False)
     user = models.ForeignKey(UserProfile)
 
 class QRCodeRecord(models.Model):
-    code_content = models.SlugField(max_length=40, unique=True)
+    code_content = models.CharField(max_length=40, unique=False)
     time = models.DateTimeField(auto_now_add=True, editable=False)
     user = models.ForeignKey(UserProfile)
 
 class QRcodeStatus(models.Model):
     code = models.SlugField(max_length=40, unique=True)
-    last_read = models.DateTimeField(auto_now=True, editable=True)
+    last_read = models.DateTimeField(default=datetime.now(), editable=True)
     user = models.ForeignKey(UserProfile)
 
 class QRcodeList(models.Model):
@@ -56,3 +56,8 @@ class QRcodeList(models.Model):
 
     def __str__(self):
         return self.code_content
+
+class BoughtRecord(models.Model):
+    user = models.ForeignKey(UserProfile)
+    item_name = models.IntegerField(default=0)
+    bought_time = models.DateTimeField(auto_now_add=True, editable=False)
