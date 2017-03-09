@@ -89,13 +89,13 @@ class BuyItem(APIView):
     #         return HttpResponse('success') #return Response(status=status.HTTP_200_OK)  ##TODO proper response
     #     else:
     #         return HttpResponse('not enough item') #return Response(status=status.HTTP_409_CONFLICT) #TODO proper response
-    def get(self, request, uid, item_id):
+    def get(self, request, username, item_id):
         if (ItemList.objects.filter(pk=item_id).exists()):
-            if (UserProfile.objects.filter(pk=uid).exists()):
+            if (UserProfile.objects.filter(username=username).exists()):
                 item = ItemList.objects.get(pk=item_id)
                 if item.remain >= 1:
                     self.update_item(item_id)
-                    self.save_to_user(uid, item_id)
+                    self.save_to_user(username, item_id)
                     return HttpResponse('success')  # return Response(status=status.HTTP_200_OK)  ##TODO proper response
                 else:
                     return HttpResponse('not enough item')  # return Response(status=status.HTTP_409_CONFLICT) #TODO proper response
@@ -111,8 +111,8 @@ class BuyItem(APIView):
         item.save()
 
 
-    def save_to_user(self, uid, item_id):
-        buyer = UserProfile.objects.get(pk=uid)
+    def save_to_user(self, username, item_id):
+        buyer = UserProfile.objects.get(username=username)
         boughtitem = BoughtItems.objects.filter(item_name=item_id)
 
         if boughtitem.filter(user=buyer).exists():
@@ -130,20 +130,29 @@ class BuyItem(APIView):
 
 class QRCode(APIView):
 
-    def get(self, request, uid, qrcode):
+    def get(self, request, username, qrcode):
         if (QRcodeList.objects.filter(code_content=qrcode).exists()):
-            QRcode_status_data = self.got_correct_code(uid, qrcode)
+            QRcode_status_data_list = self.got_correct_code(username, qrcode)
+
+            if QRcode_status_data_list.filter(code=qrcode).exists():
+                QRcode_status_data = QRcode_status_data_list.get(code=qrcode)
+                logic = 0
+            else:
+                user = UserProfile.objects.get(username=username)
+                QRcode_status_data = QRcodeStatus(code=qrcode, user=user)
+                logic = 1
+
             old_time = QRcode_status_data.last_read
             now = datetime.datetime.now(pytz.utc)
             time_delta = now - old_time
-            if (time_delta.seconds >= 60):  # TODO QRcode cold down set here
-                QRcode_status_data.last_read = datetime.datetime.now()
+            if ((time_delta.seconds >= 180) or logic):  # TODO QRcode cold down set here
+                QRcode_status_data.last_read = now
                 QRcode_status_data.save()
                 point_recieved = randint(10, 50)  # point range set here
-                user = UserProfile.objects.get(pk=uid)
+                user = UserProfile.objects.get(username=username)
                 user.usable_points += point_recieved
                 user.save()
-                a = QRCodeRecord(code_content=qrcode, user=user)
+                a = QRCodeRecord(code_content=qrcode, points_got=point_recieved, user=user)
                 a.save()
                 return HttpResponse('successfully got points')  # TODO proper response
             else:
@@ -151,14 +160,15 @@ class QRCode(APIView):
         else:
             return HttpResponse('code nonexist')  #TODO proper response
 
-    def got_correct_code(self, uid, qrcode):
-        user = UserProfile.objects.get(pk=uid)
+    def got_correct_code(self, username, qrcode):
+        user = UserProfile.objects.get(username=username)
         QRcode_check_slug_list = QRcodeStatus.objects.filter(user=user)
-        if QRcode_check_slug_list.filter(code=qrcode).exists():
-            QRcode_status_data = QRcode_check_slug_list.get(code=qrcode)
-        else:
-            QRcode_status_data = QRcodeStatus(code=qrcode, user=user)
-        return QRcode_status_data
+        return QRcode_check_slug_list
+        # if QRcode_check_slug_list.filter(code=qrcode).exists():
+        #     QRcode_status_data = QRcode_check_slug_list.get(code=qrcode)
+        # else:
+        #     QRcode_status_data = QRcodeStatus(code=qrcode, user=user)
+        # return QRcode_status_data
 
 
 '''

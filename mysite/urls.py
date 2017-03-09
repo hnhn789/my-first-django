@@ -16,8 +16,8 @@ urlpatterns = [
  #   url(r'^storypoints/(?P<uid>[0-9]+)/$', GetStoryPoints.as_view(), name='storypoints'),
 #    url(r"^storyboard/", StoryListView.as_view(), name="storyboard"),
 #    url(r"^shop/$", ShopListView.as_view(), name="shop"),
-    url(r"^shop/(?P<uid>\d+)/(?P<item_id>\d+)/$", BuyItem.as_view()),
-    url(r"^QRcode/(?P<uid>\d+)/(?P<qrcode>[-\w]+)/$", QRCode.as_view()),  #TODO request not done
+    url(r"^shop/(?P<username>[-\w]+)/(?P<item_id>\d+)/$", BuyItem.as_view()),
+    url(r"^QRcode/(?P<username>[-\w]+)/(?P<qrcode>[-\w]+)/$", QRCode.as_view()),  #TODO request not done
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

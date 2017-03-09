@@ -4,7 +4,7 @@ from mptt.models import MPTTModel, TreeForeignKey
 from datetime import datetime
 
 class UserProfile(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL)
+    username = models.CharField(max_length=20, default="未命名", unique=True)
     real_name = models.CharField(max_length=100,default="未命名")
     usable_points = models.IntegerField(default=0)
 #    history_points = models.IntegerField(default=0)
@@ -44,6 +44,7 @@ class BoughtItems(models.Model):
 class QRCodeRecord(models.Model):
     code_content = models.CharField(max_length=40, unique=False)
     time = models.DateTimeField(auto_now_add=True, editable=False)
+    points_got = models.IntegerField(default=0)
     user = models.ForeignKey(UserProfile)
 
 class QRcodeStatus(models.Model):

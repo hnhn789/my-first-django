@@ -6,7 +6,7 @@ from .models import UserProfile, ItemList, QRcodeList ,BoughtItems, QRCodeRecord
 
 
 class UserPointsAdmin(admin.ModelAdmin):
-    list_display = ["pk", "user", "real_name", "usable_points"]
+    list_display = ["pk", "username", "real_name", "usable_points"]
 
 '''
 class StoryAdmin(admin.ModelAdmin):
@@ -25,11 +25,11 @@ class QRCodeAdmin(admin.ModelAdmin):
 class BoughtItemsAdmin(admin.ModelAdmin):
     list_display = ["pk", "item_name", "item_quantity", "user"]
 
-class CodeStatusAdmin(admin.ModelAdmin):
+class BoughtRecordAdmin(admin.ModelAdmin):
     list_display = ["user", "item_name", "bought_time"]
 
 class QRCodeRecordAdmin(admin.ModelAdmin):
-    list_display = ["code_content", "time", "user"]
+    list_display = ["code_content", "time",  "points_got", "user"]
 
 class CodeStatusAdmin(admin.ModelAdmin):
     list_display = ["code", "last_read", "user"]
@@ -42,5 +42,6 @@ admin.site.register(UserProfile, UserPointsAdmin)
 admin.site.register(ItemList, ItemAdmin)
 admin.site.register(QRcodeList, QRCodeAdmin)
 admin.site.register(BoughtItems, BoughtItemsAdmin)
+admin.site.register(BoughtRecord, BoughtRecordAdmin)
 admin.site.register(QRCodeRecord, QRCodeRecordAdmin)
 admin.site.register(QRcodeStatus, CodeStatusAdmin)
